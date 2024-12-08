@@ -2,6 +2,8 @@
 
 Send push notifications to Expo apps using Golang
 
+revised version of: https://github.com/oliveroneill/exponent-server-sdk-golang/tree/master
+
 ## Documentation
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/9ssi7/exponent.svg)](https://pkg.go.dev/github.com/9ssi7/exponent)
