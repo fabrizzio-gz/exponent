@@ -85,10 +85,12 @@ func (c *Client) publish(ctx context.Context, msgs []*Message) ([]*MessageRespon
 	if r.Data == nil {
 		return nil, NewServerError("invalid server response", resp, r, nil)
 	}
-	if len(msgs) != len(r.Data) {
-		errMsg := fmt.Sprintf("mismatched response length. Expected %d receipts but only received %d", len(msgs), len(r.Data))
-		return nil, NewServerError(errMsg, resp, r, nil)
-	}
+	// Its closed because MessageItem has own Status, Message, etc.
+	// So, we don't need to check the length of r.Data
+	// if len(msgs) != len(r.Data) {
+	// 	errMsg := fmt.Sprintf("mismatched response length. Expected %d receipts but only received %d", len(msgs), len(r.Data))
+	// 	return nil, NewServerError(errMsg, resp, r, nil)
+	// }
 	for i := range r.Data {
 		r.Data[i].MessageItem = msgs[i]
 	}
