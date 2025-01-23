@@ -112,5 +112,5 @@ func checkStatus(resp *http.Response) error {
 	if resp.StatusCode >= http.StatusOK && resp.StatusCode <= 299 {
 		return nil
 	}
-	return fmt.Errorf("invalid response (%d %s)")
+	return fmt.Errorf("invalid response (%d %s)", resp.StatusCode, resp.Status)
 }
