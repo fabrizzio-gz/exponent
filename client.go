@@ -16,27 +16,29 @@ type Client struct {
 func NewClient(opts ...Option) *Client {
 	c := &Config{}
 	for _, opt := range opts {
-		opt(c)
+		if opt != nil {
+			opt(c)
+		}
 	}
 	withDefaults(c)
 	return &Client{c}
 }
 
 // Publish sends a single push notification
-// @param push_message: A PushMessage object
-// @return an array of PushResponse objects which contains the results.
+// @param msg: A Message object
+// @return an array of MessageResponse objects which contains the results.
 // @return error if any requests failed
-func (c *Client) PublishSingle(ctx context.Context, msg *Message) (*MessageResponse, error) {
+func (c *Client) PublishSingle(ctx context.Context, msg *Message) ([]*MessageResponse, error) {
 	responses, err := c.publish(ctx, []*Message{msg})
 	if err != nil {
 		return nil, err
 	}
-	return responses[0], nil
+	return responses, nil
 }
 
 // PublishMultiple sends multiple push notifications at once
-// @param push_messages: An array of PushMessage objects.
-// @return an array of PushResponse objects which contains the results.
+// @param msgs: An array of Message objects.
+// @return an array of MessageResponse objects which contains the results.
 // @return error if the request failed
 func (c *Client) Publish(ctx context.Context, msgs []*Message) ([]*MessageResponse, error) {
 	return c.publish(ctx, msgs)
@@ -85,14 +87,23 @@ func (c *Client) publish(ctx context.Context, msgs []*Message) ([]*MessageRespon
 	if r.Data == nil {
 		return nil, NewServerError("invalid server response", resp, r, nil)
 	}
-	// Its closed because MessageItem has own Status, Message, etc.
-	// So, we don't need to check the length of r.Data
-	// if len(msgs) != len(r.Data) {
-	// 	errMsg := fmt.Sprintf("mismatched response length. Expected %d receipts but only received %d", len(msgs), len(r.Data))
-	// 	return nil, NewServerError(errMsg, resp, r, nil)
-	// }
+
+	// Expand the messages to match the API's response structure
+	var expandedMessages []*Message
+	for _, msg := range msgs {
+		for range msg.To {
+			expandedMessages = append(expandedMessages, msg)
+		}
+	}
+
+	if len(expandedMessages) != len(r.Data) {
+	 	errMsg := fmt.Sprintf("mismatched response length. Expected %d receipts but only received %d", len(expandedMessages), len(r.Data))
+	 	return nil, NewServerError(errMsg, resp, r, nil)
+	}
+	// data will contain an array of push tickets in the same order in which the messages were sent
+	// assign each response to its corresponding message
 	for i := range r.Data {
-		r.Data[i].MessageItem = msgs[i]
+		r.Data[i].MessageItem = expandedMessages[i]
 	}
 	return r.Data, nil
 }

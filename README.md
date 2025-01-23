@@ -43,10 +43,12 @@ func main() {
 		panic(err)
 	}
 
-	if res.IsOk() {
-		println("Notification sent successfully")
-	} else {
-		println("Notification failed")
+	for _, receipt := range res {
+		if receipt.IsOk() {
+			println("Notification sent successfully")
+		} else {
+			println("Notification failed")
+		}
 	}
 }
 
