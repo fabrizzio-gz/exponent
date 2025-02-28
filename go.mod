@@ -1,3 +1,3 @@
-module github.com/9ssi7/exponent
+module github.com/fabrizzio-gz/exponent
 
-go 1.23.0
+go 1.21.0
